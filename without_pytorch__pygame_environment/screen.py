@@ -38,7 +38,7 @@ if use_matplotlib_to_rank_snake:
                                                                     dic[c][round(len(dic[c]) / 2)])  # \t制表符不可用
             name = ['\n'.join(dic[c]) for c in length]
             if self.last_name == name and self.last_length == length:
-                surfig = self.last_Figure
+                sur_fig = self.last_Figure
             else:
                 # 图像绘制
                 fig, ax = plt.subplots()
@@ -57,10 +57,10 @@ if use_matplotlib_to_rank_snake:
                 canvas = agg.FigureCanvasAgg(fig)
                 canvas.draw()
                 renderer = canvas.get_renderer()
-                surfig = pygame.image.fromstring(renderer.tostring_rgb(), canvas.get_width_height(), "RGB")
+                sur_fig = pygame.image.fromstring(renderer.tostring_rgb(), canvas.get_width_height(), "RGB")
 
-                self.last_name, self.last_length, self.last_Figure = name, length, surfig
-            self.blit(surfig)
+                self.last_name, self.last_length, self.last_Figure = name, length, sur_fig
+            self.blit(sur_fig)
             plt.close('all')
             return
 

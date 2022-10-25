@@ -525,7 +525,7 @@ class snake_of_ai(Snake):
 
 
 class coinGroup(pygame.sprite.Group):
-    coinFig = pygame.image.load('../coin.png')
+    coinFig = pygame.image.load('./static/coin.png')
     coinFig.set_colorkey(BLACK)
 
     class Coin(pygame.sprite.Sprite):
@@ -577,7 +577,7 @@ class coinGroup(pygame.sprite.Group):
 
 
 class gameHandler(object):
-    def __init__(self, episode=0, play_sound=False):
+    def __init__(self, episode=0):
         self.Coin_group: (coinGroup, None) = None
         self.player_control: (snake_of_player, snake_of_ai) = None
         self.snakes = list()
@@ -587,9 +587,6 @@ class gameHandler(object):
 
         self.clock = pygame.time.Clock()
         self.robot_no = int()
-        if play_sound:
-            self.music = pygame.mixer.Sound('../music.mp3')
-            self.music.play(-1, )
 
     def addEpisode(self, episode: int = 0):
         self.__episode += 1

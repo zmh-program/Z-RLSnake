@@ -8,7 +8,8 @@ ACTION_NUMBER = 12  # 本来是 361个act 0~360° 对应360度, 但是Linear的o
 
 # About Batch/Tensor:
 tensor_length = 45  # Must be odd!
-# If you change this value (tensor_length), you should increase or decrease the number of Convolution, 即Conv2d & MaxPool2d.
+# If you change this value (tensor_length), you should increase or decrease the number of Convolution,
+# 即Conv2d & MaxPool2d.
 assert tensor_length % 2 and not tensor_length % 5
 tensor_radius = (tensor_length - 1) // 2
 tensor_size = tensor_length ** 2
@@ -24,7 +25,7 @@ radius = block_size // 2
 SCORE_TO_LENGTH = 5
 COINS = 200
 fps = 15
-IGNORE_ZERO = True  # INGORE ZERO at <function debug_batch>
+IGNORE_ZERO = True  # IGNORE ZERO at <function debug_batch>
 
 # About RobotParam:
 ROBOT_NUMBER = 0

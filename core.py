@@ -1,4 +1,5 @@
 import os
+import typing
 from typing import Tuple
 from rich import progress
 import numpy
@@ -11,14 +12,17 @@ from datetime import datetime
 from analysing import image
 
 
-def _check_capability():
-    import torch._C
-
+def _check_capability() -> typing.Union[True, None]:
+    """
+    copy -> pytorch.cuda setup
+    :return: True / None
+    """
     if torch.version.cuda is not None:  # on ROCm we don't want this check
+        _path = __import__("torch._C")
         for d in range(torch.cuda.device_count()):
             major, minor = torch.cuda.get_device_capability(d)
             if major * 10 + minor < min((int(arch.split("_")[1]) for arch in torch.cuda.get_arch_list()), default=35):
-                return False
+                return
         return True
 
 

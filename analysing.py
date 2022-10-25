@@ -23,7 +23,7 @@ class image(object):
         self.scores = numpy.array([])
         self.episode = numpy.array([])
 
-    def add(self, reward, episode, score):
+    def add(self, reward, episode, score) -> None:
         self.rewards = numpy.append(self.rewards, reward)
         self.episode = numpy.append(self.episode, episode)
         self.scores = numpy.append(self.scores, score)
