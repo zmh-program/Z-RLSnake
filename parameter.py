@@ -4,10 +4,10 @@ from torch import float32
 LR = 0.001  # Learning
 EPSILON = 0.8  # 0.8 (80%): argmax index, 0.2(20%): random
 GAMMA = 0.9  # 衰减值
-ACTION_NUMBER = 12  # 本来是 361个act 0~360° 对应360度, 但是Linear的out_features太大, 计算量偏大, 所以改用 30° 一个act.
+ACTION_NUMBER = 8  # 本来是 361个act 0~360° 对应360度, 但是Linear的out_features太大, 计算量偏大, 所以改用 45° 一个act.
 
 # About Batch/Tensor:
-tensor_length = 45  # Must be odd!
+tensor_length = 15  # Must be odd!
 # If you change this value (tensor_length), you should increase or decrease the number of Convolution,
 # 即Conv2d & MaxPool2d.
 assert tensor_length % 2 and not tensor_length % 5
@@ -31,7 +31,6 @@ IGNORE_ZERO = True  # IGNORE ZERO at <function debug_batch>
 ROBOT_NUMBER = 0
 
 # About Network:
-Conv2d_channels = 1
 kernel_size = 3
 Transition = namedtuple('Transition', ('state', 'action', 'reward', 'next_state'))
 

@@ -7,12 +7,12 @@ import torch
 from torch.nn import *
 from parameter import *
 from memory import ReplayMemory
-from game import RLenvironment, setRender
+from game import RLenvironment
 from datetime import datetime
 from analysing import image
 
 
-def _check_capability() -> typing.Union[True, None]:
+def _check_capability() -> typing.Union[bool, None]:
     """
     copy -> pytorch.cuda setup
     :return: True / None
@@ -42,14 +42,11 @@ def _2dimSqueezeTo4d(tensor: torch.Tensor, size) -> torch.Tensor:
 class Network(Module):
     def __init__(self):
         super(Network, self).__init__()
-        self.module = Sequential(Conv2d(Conv2d_channels, Conv2d_channels, kernel_size, padding=1),  # -> ?x1x45x45 <4d>
-                                 MaxPool2d(kernel_size),  # -> ?x1x15x15 <4d>
-                                 Conv2d(Conv2d_channels, Conv2d_channels, kernel_size, padding=1),  # -> ?x1x15x15 <4d>
-                                 MaxPool2d(kernel_size),  # -> ?x1x5x5 <4d>
-                                 Softplus(),
-                                 Linear(5, 1), Squeeze(), ReLU(),
-                                 Linear(5, ACTION_NUMBER),
-                                 Squeeze())  # -> 8 <1d>
+        self.module = Sequential(
+            Conv2d(1, 1, kernel_size, padding=1), MaxPool2d(kernel_size), Softplus(),
+            Linear(5, 1), Squeeze(), ReLU(),
+            Linear(5, ACTION_NUMBER), Squeeze()
+        )  # -> 8 <1d>
 
     def forward(self, tensor) -> torch.Tensor:
         return self.module(_2dimSqueezeTo4d(tensor, tensor_length))
@@ -176,10 +173,6 @@ class AgentDQN(object):
         return self.train_num >= max_pool
 
     def train(self):
-        setRender(False)
-        self.env.debug = False
-        self.env.setTick(False)
-
         self.data = image()
         self.env.terminateEvent = self.terminateEvent
         while not self.is_finished():
@@ -190,7 +183,6 @@ class AgentDQN(object):
                 self.agentEpisode()
 
     def test_forever(self):
-        setRender(True)
         self.env.debug = True
         self.env.setTick(True)
 

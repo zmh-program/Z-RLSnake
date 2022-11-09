@@ -15,6 +15,8 @@ BoundSize = block_size * 2
 
 # About Interface and Display:
 pygame.init()
+window = pygame.display.set_mode((width + BoundSize * 2, height + BoundSize * 2))
+screen = pygame.Surface((width + 1, height + 1))  # +1: edge_lines
 pygame.display.set_caption("Snake Deep Reinforcement Learning")
 font = pygame.font.SysFont('consolas', 17)
 snake_font = pygame.font.SysFont('comicsansms', 17)
@@ -36,6 +38,13 @@ DEBUG_COLORS = {
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.StreamHandler())
+
+RENDER = True
+
+
+def setRender(boolean):  # Module level.
+    global RENDER
+    RENDER = bool(boolean)
 
 
 def relu(num: (int, float)) -> (int, float):
@@ -94,6 +103,66 @@ def timeit(objname: str, display=True):
     return setup_function
 
 
+def debug_batch(x, y, tensor: torch.Tensor, reward=0., surface=window):
+    if not RENDER:
+        return
+    for y_index, y_tensor in enumerate(tensor):
+        for x_index, x_tensor in enumerate(y_tensor):
+            value = int(x_tensor)
+            if IGNORE_ZERO and value == 0:
+                pass
+            else:
+                surface.blit(font.render(str(value), True, DEBUG_COLORS.get(value)),
+                             [x + (x_index + 0.3) * block_size + BoundSize,
+                              y + (y_index + 0.1) * block_size + BoundSize])
+            if value:
+                pygame.draw.rect(surface, DEBUG_COLORS.get(value),
+                                 pygame.Rect(x + x_index * block_size + BoundSize, y + y_index * block_size + BoundSize,
+                                             block_size, block_size),
+                                 (6 - value) // 2)
+        pygame.draw.rect(surface, WHITE, pygame.Rect(x + BoundSize, y + BoundSize,
+                                                     block_size * tensor_length, block_size * tensor_length), 2)
+        surface.blit(font.render("Batch", True, WHITE), [x + BoundSize, y - 0.9 * block_size + BoundSize])
+        surface.blit(font.render(f"reward {round(reward, 1)}", True, (255, 127, 39)),
+                     [x + ((tensor_radius + 1) * block_size) + BoundSize, y + (tensor_radius * block_size) + BoundSize])
+
+
+'''class mouseHandler:
+    def __init__(self):
+        # self.start_pos = ()
+        self.last_pos = ()
+        self.delay = 0.01 + round(1 / fps, 2)  # 每次移动鼠标中归入移动玩家蛇类的延迟
+        # self._is_moved = False
+        self.last_changed_stamp = time()
+        # self.ignore_positions = []
+
+    def update(self) -> (None, tuple):
+        """        pos = pygame.mouse.get_pos()
+                if pos in self.ignore_positions:
+                    self.ignore_positions.remove(pos)
+                    self.last_pos = pos
+                if pos != self.last_pos:
+                    if time() - self.last_changed_stamp < self.delay:
+                        self.start_pos = self.last_pos[:]
+                        self._is_moved = True
+                    self.last_changed_stamp = time()
+                    self.last_pos = pos
+                else:
+                    if self._is_moved and time() - self.last_changed_stamp > self.delay:  # 移动结束, 返回 移动的起始点和终点
+                        self._is_moved = False
+                        return self.start_pos, pos"""
+        pos = pygame.mouse.get_pos()
+        if pos != self.last_pos:
+            if time() - self.last_changed_stamp < self.delay:  # 上次移动时间距今小于self.delay, 则鼠标在一直移动
+                return True
+            self.last_changed_stamp = time()
+            self.last_pos = pos
+
+    """    def set_pos(self, pos):
+            pygame.mouse.set_pos(pos)
+            self.ignore_positions.append(pos)"""'''
+
+
 class Snake(object):
     class SnakeHead(pygame.sprite.Sprite):
         def __init__(self, parent, pos):
@@ -115,6 +184,9 @@ class Snake(object):
         def update(self, pos):
             self.rect.center = pos
             self.death_state_test()
+            if RENDER:
+                screen.blit(pygame.transform.rotate(self.image, math.atan2(*self.parent.direction) * 180 / math.pi),
+                            self.rect)
 
         def death_state_test(self):
             x, y = self.rect.center
@@ -146,6 +218,12 @@ class Snake(object):
             num = len(pos) - len(sprs)
             if num > 0:
                 self.add([Snake.SnakeBody(self.color) for _ in range(num)])
+            if RENDER:
+                for p in range(len(sprs)):
+                    spr = sprs[p]
+                    spr.rect.center = pos[p]
+                    screen.blit(spr.image,
+                                spr.rect)
 
         def snakeCollide(self, i):
             return bool(pygame.sprite.spritecollide(i, self, False))
@@ -194,6 +272,9 @@ class Snake(object):
             self.add_score()
             del self.location_tensor[-1]
             self.location_tensor.insert(0, self.to_direction(*self.location_tensor[0]))
+            sx, sy = self.location_tensor[0]
+            if RENDER:
+                screen.blit(snake_font.render(self.name, True, WHITE), [sx, sy + block_size // 2 + 1])
             self.body.update(reversed(self.location_tensor[1:]))
             self.head.update(self.location_tensor[0])  # reversed和先画头在画身体目的->转向时蛇头和转过去的身体在前
         self.updateEvent()
@@ -478,6 +559,8 @@ class coinGroup(pygame.sprite.Group):
             if isinstance(spr, coinGroup.Coin):
                 if time() - spr.create_time > 30:
                     self.remove(spr)
+                if RENDER:
+                    screen.blit(spr.image, spr.pos)
 
     def filter_element(self, x_size, y_size) -> iter:
         """
@@ -500,6 +583,7 @@ class gameHandler(object):
         self.snakes = list()
 
         self.__episode = episode
+        self.__tick = True
 
         self.clock = pygame.time.Clock()
         self.robot_no = int()
@@ -511,6 +595,12 @@ class gameHandler(object):
 
     def getEpisode(self) -> int:
         return self.__episode
+
+    def setTick(self, tick: bool):
+        self.__tick = bool(tick)
+
+    def is_tick(self) -> bool:
+        return self.__tick
 
     def is_alive(self) -> bool:
         return self.player_control.is_alive()
@@ -541,15 +631,30 @@ class gameHandler(object):
         self.snakes.append(snake_of_robot(self, self.robot_no))
 
     def update(self):
+        if RENDER:
+            screen.fill(BACKGROUND_COLOR)
+            self.render_lines()
         self.eventHandler()
+        if RENDER:
+            self.Coin_group.draw()
         for s in self.snakes:
             assert isinstance(s, Snake)
             if isinstance(s, Snake) and s.is_alive():
                 s.update()
+        if RENDER:
+            self.render_content([f"episode: {self.__episode}",
+                                 f"score:   {self.player_control.score}",
+                                 f"length:  {self.player_control.get_length()}",
+                                 f"kill:    {self.player_control.kill}",
+                                 ])
 
     def run_once(self) -> None:
         self.update()
+        if RENDER:
+            window.blit(screen, [BoundSize, BoundSize])
         pygame.display.update()
+        if self.is_tick():
+            self.clock.tick(fps)
 
     def run_while_alive(self):  # main.py
         self.reset()
@@ -592,6 +697,19 @@ class gameHandler(object):
             self.Coin_group.coinLack()
         return value
 
+    @staticmethod
+    def render_content(data) -> None:
+        [screen.blit(font.render(data[y], True, WHITE),
+                     [5, y * ((font_height if font_height >= block_size else block_size) + 0.5)])
+         for y in range(len(data))]
+
+    @staticmethod
+    def render_lines():
+        for x in range(0, width + block_size, block_size):
+            pygame.draw.line(screen, LINE_COLOR, (x, 0), (x, height))
+        for y in range(0, height + block_size, block_size):
+            pygame.draw.line(screen, LINE_COLOR, (0, y), (width, y))
+
     def init_player_c(self):  # inherit
         return snake_of_player(self, "me")
 
@@ -614,9 +732,11 @@ class RLenvironment(gameHandler):
     input_dim = 1
 
     player_control: snake_of_ai
+    debug = False
 
-    def __init__(self, episode=0):
+    def __init__(self, episode=0, tick=False):
         super(RLenvironment, self).__init__(episode)
+        self.setTick(tick)
         self.batch_c = None
         self.tensor = None
 
@@ -678,6 +798,14 @@ class RLenvironment(gameHandler):
     def run_once(self) -> float:
         self.update()
         reward = self.player_control.get_reward_once()
+        window.fill(BACKGROUND_COLOR)
+        if RENDER:
+            window.blit(screen, [BoundSize, BoundSize])
+        if self.debug:
+            debug_batch(*self.batch_c, self.tensor, reward=reward)
+        pygame.display.update()
+        if self.is_tick():
+            self.clock.tick(fps)
         return reward
 
     def step(self, action: int):
@@ -706,3 +834,15 @@ class RLenvironment(gameHandler):
 
     def init_player_c(self):
         return snake_of_ai(self)
+
+
+if __name__ == '__main__':
+    torch.set_printoptions(profile="full")
+    game = RLenvironment()
+    game.debug = True
+    game.setTick(True)
+    while True:
+        game.reset()
+        while game.is_alive():
+            game.step(ACTION_NUMBER)
+            print(game.get_state())
