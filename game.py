@@ -16,9 +16,6 @@ BoundSize = block_size * 2
 # About Interface and Display:
 pygame.init()
 pygame.display.set_caption("Snake Deep Reinforcement Learning")
-font = pygame.font.SysFont('consolas', 17)
-snake_font = pygame.font.SysFont('comicsansms', 17)
-font_height = font.get_height()
 
 BLACK = (0, 0, 0)
 BACKGROUND_COLOR = BLACK
@@ -581,11 +578,7 @@ class gameHandler(object):
         pass
 
     def eventHandler(self) -> None:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.terminate()
-        if isinstance(self.player_control, snake_of_player):
-            self.player_control.pressedHandler()
+        pass
 
     def collide_coin(self, head: Snake.SnakeHead) -> int:
         value = sum([_coin.level for _coin in pygame.sprite.spritecollide(head, self.Coin_group, True)
