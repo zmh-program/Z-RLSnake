@@ -444,7 +444,9 @@ class snake_of_ai(Snake):
 
 
 class coinGroup(pygame.sprite.Group):
-    coinFig = pygame.image.load('./static/coin.png')
+    coinFig = pygame.Surface((20, 20))
+    coinFig.fill(BLACK)
+    pygame.draw.circle(coinFig, (255, 127, 39), (10, 10), 10)
     coinFig.set_colorkey(BLACK)
 
     class Coin(pygame.sprite.Sprite):
