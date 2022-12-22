@@ -578,7 +578,11 @@ class gameHandler(object):
         pass
 
     def eventHandler(self) -> None:
-        pass
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.terminate()
+        if isinstance(self.player_control, snake_of_player):
+            self.player_control.pressedHandler()
 
     def collide_coin(self, head: Snake.SnakeHead) -> int:
         value = sum([_coin.level for _coin in pygame.sprite.spritecollide(head, self.Coin_group, True)
