@@ -46,6 +46,16 @@ class CircleArray(vec2d.DynamicArray2d):
                     return True
         return False
 
+    def element_is_collide_array(self, index: int, array: "CircleArray") -> bool:
+        arr = self.get(index)
+        for arr_ in array.array:
+            if circle_collide(
+                arr, self.radius,
+                    arr_, array.radius,
+            ):
+                return True
+        return False
+
     def get_collide_indexes(self, array: "CircleArray") -> Iterable[Tuple[int, int]]:
         for idx, arr in enumerate(self.array):
             for idx_, arr_ in enumerate(array.array):

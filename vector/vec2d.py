@@ -114,17 +114,21 @@ class DynamicArray2d(object):
     def array(self) -> numpy.ndarray:
         return self._array[:self._size]
 
-    def append(self, value: Tuple[Union[int, float]]) -> None:
+    def append(self, value: Tuple[Union[int, float]]) -> numpy.ndarray:
+        value = numpy.array(value)
         if self._size >= self._array_size:
             self._array_size += round(_limit(self._array_size * 0.5))
             self._array = numpy.resize(self._array, [self._array_size, 2])
         self._array[self._size] = value
         self._size += 1
+        return value
 
-    def insert(self, value: Tuple[Union[int, float]], index: int = 0) -> None:
+    def insert(self, value: Tuple[Union[int, float]], index: int = 0) -> numpy.ndarray:
+        value = numpy.array(value)
         self._array = numpy.insert(self._array, index, value, axis=0)
         self._size += 1
         self._array_size += 1
+        return value
 
     def add_values(self, value, times: int) -> None:
         for _ in range(times):
@@ -148,3 +152,6 @@ class DynamicArray2d(object):
         response = self.get(index)
         self.delete(index)
         return response
+
+    def __len__(self):
+        return self._size

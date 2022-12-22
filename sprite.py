@@ -1,11 +1,8 @@
+from param import *
 from vector.circle import *
 from vector.vec2d import hypot_percent
 from typing import *
 import numpy
-
-SNAKE_RADIUS = 10
-COIN_RADIUS = 5
-SNAKE_BODY_STRIDE = 5.
 
 
 class BaseSnake(CircleArray):
@@ -16,6 +13,7 @@ class BaseSnake(CircleArray):
         self.add_values(location or [0, 0], length)
         self.direction: numpy.ndarray = numpy.array(direction or [0, 0])
         self.alive = True
+        self.head = numpy.array([0, 0])
 
     def __del__(self):
         del self.color
@@ -29,7 +27,7 @@ class BaseSnake(CircleArray):
         del self
 
     def move(self) -> None:
-        self.insert(self.pop() + self.direction)
+        self.head = self.insert(self.pop() + self.direction)
 
     def add_body(self) -> None:
         self.append(self.get(-1))
@@ -43,6 +41,14 @@ class BaseSnake(CircleArray):
 
     def __str__(self):
         return f"Snake Object (length={self._size}, direction={self.direction})"
+
+    def snake_collided(self, snake: "BaseSnake") -> bool:
+        return self.element_is_collide_array(0, snake)
+
+    def border_collide(self) -> bool:
+        x, y = self.head
+        return x - self.radius < 0 or y - self.radius < 0 or \
+            x + self.radius > WIDTH or y + self.radius > HEIGHT
 
 
 class Coin(Circle):
