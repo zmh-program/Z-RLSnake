@@ -94,8 +94,9 @@ class BaseSnake(CircleArray):
 
 
 class Coin(Circle):
-    def __init__(self, position: Optional[Iterable[float]] = None):
+    def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
         super().__init__(position or generate_position(), radius=COIN_RADIUS)
+        self.score = score
 
     def __str__(self):
         return f"Coin Object (x={self.x}, y={self.y})"

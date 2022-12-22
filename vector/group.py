@@ -8,9 +8,13 @@ class CoinGroup(object):
         self.coins: List[Coin] = []
         self._coin_length = 0
 
-    def add_coin(self):
-        self.coins.append(Coin())
+    def add_coin(self, position=None, score=1):
+        self.coins.append(Coin(score, position))
         self._coin_length += 1
+
+    def snake_death_as_coin(self, snake: BaseSnake):
+        for arr in snake.array:
+            self.add_coin(arr, 5)
 
     def remove_coin(self, coin: Coin):
         self.coins.remove(coin)
@@ -20,8 +24,9 @@ class CoinGroup(object):
         assert index + 1 <= self._coin_length
         del self.coins[index]
 
-    def collide_coin(self, coin: Coin):
+    def collide_coin(self, coin: Coin) -> int:
         self.remove_coin(coin)
+        return coin.score
 
     @property
     def length(self):
@@ -42,6 +47,10 @@ class SnakeGroup(object):
     @property
     def iter_combinations(self):
         return combinations(self.snakes, 2)
+
+    def call_death(self, snake: BaseSnake):
+        # !!! game handler !!! #
+        snake.death()
 
     def get_snake_collide(self) -> Set[BaseSnake]:
         return set(self._iter_snake_collide())

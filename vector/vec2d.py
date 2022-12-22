@@ -114,6 +114,9 @@ class DynamicArray2d(object):
     def array(self) -> numpy.ndarray:
         return self._array[:self._size]
 
+    def __iter__(self):
+        return iter(self.array)
+
     def append(self, value: Tuple[Union[int, float]]) -> numpy.ndarray:
         value = numpy.array(value)
         if self._size >= self._array_size:
