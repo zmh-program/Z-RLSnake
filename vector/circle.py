@@ -9,8 +9,8 @@ def circle_collide(pos1, radius1, pos2, radius2) -> bool:
 
 
 class Circle(vec2d.Point2d):
-    def __init__(self, x: Union[int, float], y: Union[int, float], radius=5):
-        super().__init__(x, y)
+    def __init__(self, position: Iterable[float], radius=5):
+        super().__init__(*position)
         self.radius = radius
 
     def _is_collide(self, pos, radius) -> bool:
@@ -46,14 +46,14 @@ class CircleArray(vec2d.DynamicArray2d):
                     return True
         return False
 
-    def element_is_collide_array(self, index: int, array: "CircleArray") -> bool:
+    def element_is_collide_array(self, index: int, array: "CircleArray") -> Union[int, False]:
         arr = self.get(index)
-        for arr_ in array.array:
+        for idx_, arr_ in enumerate(array.array):
             if circle_collide(
                 arr, self.radius,
                     arr_, array.radius,
             ):
-                return True
+                return idx_
         return False
 
     def get_collide_indexes(self, array: "CircleArray") -> Iterable[Tuple[int, int]]:
