@@ -24,10 +24,16 @@ class CoinGroup(object):
         assert index + 1 <= self._coin_length
         del self.coins[index]
 
-    def collide_coin(self, coin: Coin) -> int:
+    def coin_collided(self, coin: Coin) -> int:
         self.remove_coin(coin)
         return coin.score
 
+    def collide_snakes(self, group: "SnakeGroup"):
+        for snake in group.snakes:
+            for coin in self.coins:
+                if coin.is_collide_array(snake):
+                    snake.add_score(self.coin_collided(coin))
+                
     @property
     def length(self):
         return self._coin_length
@@ -35,7 +41,7 @@ class CoinGroup(object):
 
 class SnakeGroup(object):
     def __init__(self):
-        self.snakes = []
+        self.snakes: List[BaseSnake] = []
 
     def add_snake(self, otype=None):
         self.snakes.append(otype or BaseSnake)
