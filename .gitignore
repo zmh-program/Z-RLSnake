@@ -1,8 +1,1 @@
-
 *.pyc
-*.vsidx
-*.lock
-.vs/Z-RLSnake/v17/.suo
-.vs/ProjectSettings.json
-.vs/slnx.sqlite
-.vs/VSWorkspaceState.json
