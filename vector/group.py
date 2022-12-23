@@ -52,6 +52,9 @@ class CoinGroup(object):
     def length(self):
         return self._coin_length
 
+    def collect_migration(self):
+        return {coin: coin.migration for coin in self.coins if coin.has_migration}
+
 
 class SnakeGroup(object):
     def __init__(self, parent: "AbstractGameGroup"):
@@ -90,6 +93,9 @@ class SnakeGroup(object):
                 yield s1
             if b2:
                 yield s2
+
+    def collect_migration(self):
+        return {snake: snake.migration for snake in self.snakes if snake.has_migration}
 
 
 class AbstractGameGroup(object):

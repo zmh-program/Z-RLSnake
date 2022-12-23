@@ -25,7 +25,28 @@ def snake_combination_collide(s1: "BaseSnake", s2: "BaseSnake") -> Tuple[bool, b
     return not not response, not not s2.snake_collided(s1)  # 包含双方都由对方身体碰撞头部 (由自身身体碰撞头部不会视为碰撞)
 
 
-class BaseSnake(CircleArray):
+class Migration(object):
+    def __init__(self):
+        self.migration_ = {}
+
+    def release_migration(self):
+        self.migration_ = {}
+
+    def add_migration(self, key, value):
+        self.migration_[key] = value
+
+    @property
+    def has_migration(self) -> bool:
+        return bool(self.migration_)
+
+    @property
+    def migration(self):
+        migrate = self.migration_
+        self.release_migration()
+        return migrate
+
+
+class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
                  direction: Optional[list] = None, length=3):
         super().__init__(length, radius=SNAKE_RADIUS)
@@ -121,7 +142,7 @@ class SnakePlayer(BaseSnake):
         pass
 
 
-class Coin(Circle):
+class Coin(Circle, Migration):
     def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
         super().__init__(position or generate_position(), radius=COIN_RADIUS)
         self.score = score
