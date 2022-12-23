@@ -3,8 +3,9 @@ from itertools import combinations
 from typing import *
 
 
-class CoinGroup(object):
+class CoinGroup(Migration):
     def __init__(self, parent: "AbstractGameGroup"):
+        super().__init__()
         self.coins: List[Coin] = []
         self.nature_coins: List[Coin] = []
         self._coin_length = 0
@@ -52,8 +53,8 @@ class CoinGroup(object):
     def length(self):
         return self._coin_length
 
-    def collect_migration(self):
-        return {coin: coin.migration for coin in self.coins if coin.has_migration}
+    def get_data(self) -> list:
+        return [coin.data for coin in self.coins]
 
 
 class SnakeGroup(object):
@@ -94,8 +95,12 @@ class SnakeGroup(object):
             if b2:
                 yield s2
 
-    def collect_migration(self):
+    @property
+    def migration(self):
         return {snake: snake.migration for snake in self.snakes if snake.has_migration}
+
+    def get_data(self) -> list:
+        return [snake.get_data() for snake in self.snakes if snake.alive]
 
 
 class AbstractGameGroup(object):
@@ -118,3 +123,10 @@ class AbstractGameGroup(object):
         self.snake_group.update()
         self.coin_group.update()
         self.tick()
+
+    @property
+    def migration(self):
+        return {
+            "coin": self.coin_group.migration,
+            "snake": self.snake_group.migration,
+        }

@@ -26,6 +26,26 @@ def snake_combination_collide(s1: "BaseSnake", s2: "BaseSnake") -> Tuple[bool, b
 
 
 class Migration(object):
+    """
+    Migration 机制:
+        1. 当客户端进入时, 提出全部数据
+            取出的数据是即刻生成 即刻释放的, 因为数据的生成不会占用过大的内存 (4 KiB * n ± 1 KiB),
+            反而缓存json过的数据占用内存反而大, 尤其是动态数据, 每帧还需刷新, 客户端的增减不是大幅度的,
+            约 ((409 Bytes * b ± 1.5KiB) * n)
+
+            (两个数据来自动态内存计算工具 NpStat, 有可能不太准哈仅供参考)
+
+        2. 在进行时, 因为每次发全部数据不大现实,
+            为了节省带宽, 节省网络传输带来的延迟, 减少损失的性能, 因此只更改变化的数据, 其他固定的数据
+            (如蛇方向未变, 交给客户端javascript计算)         即采用客户端渲染计算
+            并且还有一点就是 如果每次都发送所有数据, 反而会占用客户端更多的处理, 计算时间, 加上网络和带宽的延迟, 帧率会大幅降低
+            依赖于tcp传输的准确性, 依赖于websocket协议来解决tcp分包粘包, 每次计算几乎都会无误(除了网络故障, 应用层丢失)
+
+            这也是Minecraft的区块刷新的网络传输方法之一 (不过人家是udp, 大概因为要求数据准确率不是极高, 且通过双方算法弥补, 否则不可能每帧近GB传输吧)
+                                                (别问我是怎么知道的)
+
+    """
+
     def __init__(self):
         self.migration_ = {}
 
@@ -44,6 +64,9 @@ class Migration(object):
         migrate = self.migration_
         self.release_migration()
         return migrate
+
+    def get_data(self) -> dict:
+        pass
 
 
 class BaseSnake(CircleArray, Migration):
@@ -117,6 +140,17 @@ class BaseSnake(CircleArray, Migration):
         return x - self.radius < 0 or y - self.radius < 0 or \
             x + self.radius > WIDTH or y + self.radius > HEIGHT
 
+    def get_data(self) -> dict:
+        return {
+            "name": self.name,
+            "color": self.color,
+            "direction": self.direction,
+            "array": self.array,
+            "kill": self.kill,
+            "score": self.score,
+            "length": self.length,
+        }
+
 
 class SnakePlayer(BaseSnake):
     def __init__(self, *args, **kwargs):
@@ -142,7 +176,7 @@ class SnakePlayer(BaseSnake):
         pass
 
 
-class Coin(Circle, Migration):
+class Coin(Circle):
     def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
         super().__init__(position or generate_position(), radius=COIN_RADIUS)
         self.score = score
@@ -160,3 +194,7 @@ class Coin(Circle, Migration):
 
     def __str__(self):
         return f"Coin Object (x={self.x}, y={self.y})"
+
+    @property
+    def data(self):
+        return self.x, self.y

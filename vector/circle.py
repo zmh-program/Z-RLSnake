@@ -46,7 +46,7 @@ class CircleArray(vec2d.DynamicArray2d):
                     return True
         return False
 
-    def element_is_collide_array(self, index: int, array: "CircleArray") -> Union[int, False]:
+    def element_is_collide_array(self, index: int, array: "CircleArray") -> Union[int, "False"]:
         arr = self.get(index)
         for idx_, arr_ in enumerate(array.array):
             if circle_collide(
