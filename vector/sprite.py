@@ -1,3 +1,5 @@
+import time
+
 from param import *
 from .circle import *
 from .vec2d import hypot_percent
@@ -24,10 +26,12 @@ def snake_combination_collide(s1: "BaseSnake", s2: "BaseSnake") -> Tuple[bool, b
 
 
 class BaseSnake(CircleArray):
-    def __init__(self, color: Optional[list] = None, location: Optional[List[float]] = None,
+    def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
                  direction: Optional[list] = None, length=3):
         super().__init__(length, radius=SNAKE_RADIUS)
         self.color = color or [0, 0, 0]
+        self.name = name
+
         self.add_values(location or generate_position(), length)
         self.direction: numpy.ndarray = numpy.array(direction or [0, 0])
         self.alive = True
@@ -93,10 +97,45 @@ class BaseSnake(CircleArray):
             x + self.radius > WIDTH or y + self.radius > HEIGHT
 
 
+class SnakePlayer(BaseSnake):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def count_direction(self, mouse_position):
+        self.update_direction(self.get_head_distances(mouse_position))
+
+    def get_head_distances(self, pos) -> numpy.ndarray:
+        (x1, y1), (x2, y2) = pos, self.head
+        return numpy.array([x1 - x2, y1 - y2])
+
+    def gradient_up(self):
+        pass
+
+    def gradient_down(self):
+        pass
+
+    def gradient_left(self):
+        pass
+
+    def gradient_right(self):
+        pass
+
+
 class Coin(Circle):
     def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
         super().__init__(position or generate_position(), radius=COIN_RADIUS)
         self.score = score
+
+        self.generated = 0
+        self.natural = False
+
+    def setNatural(self):
+        self.natural = True
+        self.generated = int(time.time())
+
+    @property
+    def is_clear(self) -> bool:
+        return self.natural and ((time.time() - self.generated) > NATURAL_COIN_DISAPPEAR)
 
     def __str__(self):
         return f"Coin Object (x={self.x}, y={self.y})"

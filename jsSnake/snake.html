@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style type="text/css">
+        * {margin: 0;padding: 0;}
+        html, body{width: 100%; height: 100%;}
+
+        .map {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #aabbbb;
+            overflow: hidden;
+        }
+
+        .snake-body{
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid black;
+            background-color: red;
+        }
+        .snake-head{
+            background: url("https://cdn-icons-png.flaticon.com/128/2469/2469814.png");
+            background-size: cover;
+            border: 0;
+            border-radius: 100%;
+        }
+
+        .coin{
+            background: url("https://cdn-icons-png.flaticon.com/128/1490/1490853.png");
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="map" id="map"></div>
+
+    <script type="text/javascript">
+        const map = document.getElementById('map');
+        map.onmousemove = function (event) {
+            s.set_head_rotate(event.pageX, event.pageY);
+        }
+        const size = 15;
+        function angle(start_x, start_y, end_x, end_y) {
+            console.log((end_x - start_x), (end_y - start_y))
+            return Math.atan2((end_y - start_y), (end_x - start_x)) / (Math.PI * 2) * 360 - 90;
+        }
+
+        function change_position(element, x, y){
+            element.style.left = x + "px";
+            element.style.top = y + "px";
+        }
+
+        class Snake {
+            constructor() {
+                this.radius = size / 2;
+                this.direction = [this.radius, this.radius];
+                this.positions = [];
+                this.bodies = [];
+            }
+            set_head_rotate(mouse_X, mouse_Y){
+                let head = this.positions[0];
+                let headObj = this.bodies[0];
+                let mapPosition = map.getBoundingClientRect();
+                headObj.style.transform = "rotate(" + angle(mapPosition.x + head[0] + this.radius, mapPosition.y + head[1] + this.radius, mouse_X, mouse_Y) + "deg)";
+            }
+
+            create_body(x, y) {
+                let body = document.createElement('div');
+                body.classList.add("snake-body");
+                body.style.width = size + "px";
+                body.style.height = size + "px";
+                change_position(body, x, y);
+                map.appendChild(body);
+                return body;
+            }
+
+            add_length(x, y){
+                this.positions.push([x, y]);
+                this.bodies.push(this.create_body(x, y));
+                if (this.bodies.length === 1){
+                    this.bodies[0].classList.add("snake-head");
+                }
+            }
+
+            change_direction(direct){
+                this.direction = direct;
+            }
+
+            update() {
+                if (this.positions.length) {
+                    this.positions.pop();
+                    let body = this.bodies.pop();
+                    let value = [this.positions[0][0] + this.direction[0],
+                        this.positions[0][1] + this.direction[1]];
+                    this.bodies[0].classList.remove("snake-head");
+                    body.classList.add("snake-head");
+                    change_position(body, value[0], value[1]);
+                    this.positions.unshift(value);
+                    this.bodies.unshift(body);
+
+                    length = this.bodies.length;
+                    for (let i = 0; i < length; i++) {
+                        this.bodies[i].style.zIndex = String(length - i);
+                    }
+                }
+            }
+        }
+
+        class Coin {
+            constructor(x, y) {
+                this.position = [x, y];
+                this.coin = document.createElement("div");
+                this.coin.classList.add("coin");
+                this.coin.style.width = size + "px";
+                this.coin.style.height = size + "px";
+                change_position(this.coin, x, y);
+                map.appendChild(this.coin);
+            }
+            delete(){
+                map.removeChild(this.coin);
+            }
+        }
+
+        class CoinGroup{
+            constructor() {
+                this.coins = [];
+            }
+            add_coin(x, y){
+                this.coins.push(new Coin(x, y));
+            }
+            delete_coin(x, y){
+                for (let i = 0; i < this.coins.length; i++) {
+                    let obj = this.coins[i];
+                    if (obj.x === x && obj.y === y){
+                        obj.delete();
+                        this.coins.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
+        s = new Snake();
+        coinGroup = new CoinGroup();
+        for (let i = 1; i < 10; i++){s.add_length(10, 10); coinGroup.add_coin(i, i)}
+
+        setInterval(function() {
+            s.update();
+        }, 2000); // this 指向不同问题
+    </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+import math
+
 import numpy
 from typing import *
 
@@ -15,6 +17,41 @@ def get_distance(pos1, pos2):
 
 def hypot_percent(arr, total: Optional[float] = 1.) -> numpy.ndarray:
     return arr / numpy.hypot(*arr) * total
+
+
+def relu(val):
+    return val if val >= 0 else 0
+
+
+def xy_to_degree(x, y) -> float:
+    r"""
+    y
+    ^
+    ┊
+    ┊ A
+    ┊\
+    ┊ \
+h   ┊  \
+    ┊   \  B
+    └┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈> x
+      w
+
+      A -> B
+
+      tan A = w / h
+      deg A = arc-tan A / Pi * 180
+      ( B = 180 - A )
+
+      center: A
+
+    Python achieve:
+        > tan = numpy.array(x/y)
+        > arc = numpy.math.atan(tan)
+        > deg = arc / numpy.math.pi * 180
+        > return deg
+    function zipped
+    """
+    return numpy.math.degrees(numpy.math.atan2(x, y))
 
 
 class Point2d(object):
