@@ -11,8 +11,12 @@ class CoinGroup(Migration):
         self._coin_length = 0
         self.parent = parent
 
+    @staticmethod
+    def generate_coin(score, position):
+        return Coin(score=score, position=position)
+
     def add_coin(self, position=None, score=1, natural=False):
-        coin = Coin(score, position)
+        coin = self.generate_coin(score, position)
         self.coins.append(coin)
         self._coin_length += 1
 
@@ -48,7 +52,7 @@ class CoinGroup(Migration):
             for coin in self.coins:
                 if coin.is_collide_array(snake):
                     snake.add_score(self.coin_collided(coin))
-                
+
     @property
     def length(self):
         return self._coin_length
@@ -104,9 +108,12 @@ class SnakeGroup(object):
 
 
 class AbstractGameGroup(object):
+    CoinGroupType = CoinGroup
+    SnakeGroupType = SnakeGroup
+
     def __init__(self):
-        self.coin_group = CoinGroup(self)
-        self.snake_group = SnakeGroup(self)
+        self.coin_group = self.CoinGroupType(self)
+        self.snake_group = self.SnakeGroupType(self)
 
         self._tick = 0
 
@@ -119,6 +126,9 @@ class AbstractGameGroup(object):
         if self._tick % GENERATE_COIN_TICK == 0:
             self.coin_group.add_coin()
 
+    def add_snake(self, name, snake_type=None):
+        self.snake_group.add_snake(name, snake_type)
+
     def update(self):
         self.snake_group.update()
         self.coin_group.update()
@@ -130,3 +140,7 @@ class AbstractGameGroup(object):
             "coin": self.coin_group.migration,
             "snake": self.snake_group.migration,
         }
+
+    def run_forever(self):
+        while True:
+            self.update()

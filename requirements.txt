@@ -1,1 +1,4 @@
 numpy==1.24.0
+pygame==2.1.2   # not required
+rich~=12.6.0
+matplotlib==3.6.2

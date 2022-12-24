@@ -433,7 +433,8 @@ class snake_of_ai(Snake):
         distance = self.get_closest_coin_distance()
         self.queue.append(distance)
         if len(self.queue) >= 3:
-            if (self.queue[0] == self.queue[2]).all():  # ValueError: The truth value of an array with more than one element is ambiguous
+            if (self.queue[0] == self.queue[2]).all():
+                # ValueError: The truth value of an array with more than one element is ambiguous
                 distance = self.queue.pop(1)
             else:
                 del self.queue[0]

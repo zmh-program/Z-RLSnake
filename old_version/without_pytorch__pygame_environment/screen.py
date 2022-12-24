@@ -145,7 +145,7 @@ class MessageBox:
         self.y = height - 360 - self.rect[3]
         self.pos = 2, self.y
         self.message = list()
-        self.font = pygame.font.SysFont('simsunnsimsun', 24)
+        self.font = pygame.font.Font('STZHONGS.TTF', 18)
         self.h = self.font.get_height() + 2  # +2像素 间隔
         self.DISPLAY_LINE = (self.rect[3] // self.h) - 4
 
@@ -484,7 +484,7 @@ class Window(object):
         self.music = pygame.mixer.Sound('music.mp3')
         self.music.play(-1, )
         self.start()
-        self.CNfont = pygame.font.SysFont('fangsou', 20)
+        self.CNfont = pygame.font.Font("STZHONGS.TTF", 20)
         self.MessageBox = MessageBox()
         pygame.display.set_caption("Snake")
         # self.CNfont.set_bold(True)

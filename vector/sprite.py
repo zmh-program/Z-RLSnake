@@ -3,6 +3,7 @@ import time
 from param import *
 from .circle import *
 from .vec2d import hypot_percent
+from .color import generate_color
 from typing import *
 import numpy
 
@@ -12,6 +13,10 @@ def generate_position():
         numpy.random.randint(WIDTH_BLOCK) * BLOCK_STRIDE,
         numpy.random.randint(HEIGHT_BLOCK) * BLOCK_STRIDE,
     ])
+
+
+def generate_direction():
+    return hypot_percent(numpy.random.rand(2), SNAKE_BODY_STRIDE)
 
 
 def snake_combination_collide(s1: "BaseSnake", s2: "BaseSnake") -> Tuple[bool, bool]:
@@ -73,11 +78,11 @@ class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
                  direction: Optional[list] = None, length=3):
         super().__init__(length, radius=SNAKE_RADIUS)
-        self.color = color or [0, 0, 0]
+        self.color = color or generate_color()
         self.name = name
 
         self.add_values(location or generate_position(), length)
-        self.direction: numpy.ndarray = numpy.array(direction or [0, 0])
+        self.direction: numpy.ndarray = numpy.array(direction or generate_direction())
         self.alive = True
         self.head = numpy.array([0, 0])
 
@@ -99,7 +104,8 @@ class BaseSnake(CircleArray, Migration):
         del self
 
     def move(self) -> None:
-        self.head = self.insert(self.pop() + self.direction)
+        self.delete(-1)
+        self.head = self.insert(self.get(0) + self.direction)
 
     def add_body(self, num=1) -> None:
         for _ in range(num):
@@ -111,6 +117,8 @@ class BaseSnake(CircleArray, Migration):
     def update(self):
         if not self.alive:
             return
+
+        self.move()
 
         self.kill += self.kill__added
         self.score += self.score__added
