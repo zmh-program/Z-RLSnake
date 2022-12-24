@@ -3,6 +3,8 @@ from numpy import random, array
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+GOLD = (255, 127, 39)
+YELLOW = (255, 201, 14)
 
 # _gen_colors = {
 #     'aliceblue': (240, 248, 255), 'aquamarine': (127, 255, 212), 'azure': (240, 255, 255),

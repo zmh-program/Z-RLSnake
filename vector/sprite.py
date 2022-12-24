@@ -164,8 +164,8 @@ class SnakePlayer(BaseSnake):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def count_direction(self, mouse_position):
-        self.update_direction(self.get_head_distances(mouse_position))
+    def update_direction(self, mouse_position):
+        super().update_direction(self.get_head_distances(mouse_position))
 
     def get_head_distances(self, pos) -> numpy.ndarray:
         (x1, y1), (x2, y2) = pos, self.head

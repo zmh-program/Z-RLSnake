@@ -67,7 +67,9 @@ class SnakeGroup(object):
         self.parent = parent
 
     def add_snake(self, name="", otype=None):
-        self.snakes.append((otype or BaseSnake)(name=name))
+        snake = (otype or BaseSnake)(name=name)
+        self.snakes.append(snake)
+        return snake
 
     def remove_snake(self, snake: BaseSnake):
         self.snakes.remove(snake)
@@ -111,6 +113,9 @@ class AbstractGameGroup(object):
     CoinGroupType = CoinGroup
     SnakeGroupType = SnakeGroup
 
+    coin_group: CoinGroup
+    snake_group: SnakeGroup
+
     def __init__(self):
         self.coin_group = self.CoinGroupType(self)
         self.snake_group = self.SnakeGroupType(self)
@@ -127,7 +132,7 @@ class AbstractGameGroup(object):
             self.coin_group.add_coin()
 
     def add_snake(self, name, snake_type=None):
-        self.snake_group.add_snake(name, snake_type)
+        return self.snake_group.add_snake(name, snake_type)
 
     def update(self):
         self.snake_group.update()
