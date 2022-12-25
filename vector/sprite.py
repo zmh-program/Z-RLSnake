@@ -197,6 +197,7 @@ class SnakeRobot(BaseSnake):
         resp = self.parent.get_closest_coin(self)
         if resp:
             self.update_direction_from_point(resp)
+        super().update()
 
 
 class Coin(Circle):
