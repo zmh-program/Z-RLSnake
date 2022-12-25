@@ -15,6 +15,10 @@ def get_distance(pos1, pos2):
     )
 
 
+def get_closest_element(point: "Point2d", array: "DynamicArray2d"):
+    return min([get_distance(point.array, arr) for arr in array.array])
+
+
 def hypot_percent(arr, total: Optional[float] = 1.) -> numpy.ndarray:
     return arr / numpy.hypot(*arr) * total
 

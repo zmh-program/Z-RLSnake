@@ -1,6 +1,7 @@
 from .sprite import *
 from itertools import combinations
 from typing import *
+from vec2d import get_closest_element
 
 
 class CoinGroup(Migration):
@@ -70,7 +71,7 @@ class SnakeGroup(object):
         self.parent = parent
 
     def add_snake(self, name="", otype=None):
-        snake = (otype or BaseSnake)(name=name)
+        snake = (otype or BaseSnake)(name=name, parent=self)
         self.snakes.append(snake)
         return snake
 
@@ -90,6 +91,9 @@ class SnakeGroup(object):
     @property
     def iter_combinations(self):
         return combinations(self.snakes, 2)
+
+    def get_closest_coin(self, snake: SnakeRobot):
+        return get_closest_element(snake.head, self.parent.coin_group.coins)
 
     def call_death(self, snake: BaseSnake):
         snake.death()
@@ -135,9 +139,6 @@ class AbstractGameGroup(object):
         self._tick += 1
         if self._tick % GENERATE_COIN_TICK == 0:
             self.coin_group.add_coin()
-
-    def add_snake(self, name, snake_type=None):
-        return self.snake_group.add_snake(name, snake_type)
 
     def update(self):
         self.coin_group.update()

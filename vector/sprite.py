@@ -76,11 +76,14 @@ class Migration(object):
 
 class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
-                 direction: Optional[list] = None, length=3):
+                 direction: Optional[list] = None, length=3, parent = None):
         super().__init__(length, radius=BLOCK_RADIUS)
         self.color = color or generate_color()
         self.background = generate_background(self.color)
         self.name = name
+
+        assert parent
+        self.parent = parent
 
         self.add_values(location or generate_position(), length)
         self.direction: numpy.ndarray = numpy.array(direction or generate_direction())
@@ -184,6 +187,11 @@ class SnakePlayer(BaseSnake):
 
     def gradient_right(self):
         pass
+
+
+class SnakeRobot(BaseSnake):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class Coin(Circle):
