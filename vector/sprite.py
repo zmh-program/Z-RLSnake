@@ -120,7 +120,7 @@ class BaseSnake(CircleArray, Migration):
     def move(self) -> None:
         self.delete(-1)
         self.head = self.insert(self.get(0) + self.direction)
-        
+
         # do not add migration
 
     def add_body(self, num=1) -> None:
@@ -143,8 +143,8 @@ class BaseSnake(CircleArray, Migration):
             return
 
         self.move()
-
         self.score_detection()
+        self.killed_detection()
 
     def __str__(self):
         return f"Snake Object (name={self.name}, length={self._size}, direction={self.direction})"
@@ -160,7 +160,7 @@ class BaseSnake(CircleArray, Migration):
 
     def add_score(self, val=1):
         self.score__added += val
-        
+
     def score_detection(self):
         if self.score__added:
             self.score += self.score__added
@@ -266,6 +266,39 @@ class SeniorSnakeRobot(JuniorSnakeRobot):
 
     def collide_detection(self):
         self._intelligence_border_collide_detection()
+
+
+class SnakeTrainer(BaseSnake):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reward_total = 0.
+        self.reward_current = 0.
+
+    def handle(self, reward):
+        data = self.generate_data
+        print(reward)
+
+    @property
+    def generate_data(self):
+        return self.parent.detect_train_data(self)
+
+    def update(self):
+        super().update()
+        self.reward_total += self.reward_current
+        self.handle(self.reward_current)
+        self.reward_current = 0.
+
+    def killed_detection(self):
+        self.reward_current += self.kill__added * 0.5
+        super().killed_detection()
+
+    def score_detection(self):
+        self.reward_current += self.score__added * 0.1
+        super().score_detection()
+
+    def death(self):
+        self.reward_current -= 1
+        super().death()
 
 
 class Coin(Circle):

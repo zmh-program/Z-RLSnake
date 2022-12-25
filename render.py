@@ -42,8 +42,7 @@ class PygameSnakeGroup(group.SnakeGroup):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.player = self.add_snake("zmh-program", otype=sprite.SnakePlayer)
-        for idx in range(100):
-            self.add_snake(str(idx), otype=sprite.SeniorSnakeRobot)
+        self.add_snake("ai", otype=sprite.SnakeTrainer)
 
     def update(self):
         super().update()

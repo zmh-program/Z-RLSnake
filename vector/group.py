@@ -2,6 +2,7 @@ from .sprite import *
 from itertools import combinations
 from typing import *
 from .vec2d import get_closest_element
+from . import core
 
 
 class CoinGroup(Migration):
@@ -122,6 +123,9 @@ class SnakeGroup(object):
     def get_data(self) -> list:
         return [snake.get_data() for snake in self.snakes if snake.alive]
 
+    def detect_train_data(self, snake: "SnakeTrainer"):
+        return self.parent.detect_train_data(snake)
+
 
 class AbstractGameGroup(object):
     CoinGroupType = CoinGroup
@@ -149,6 +153,9 @@ class AbstractGameGroup(object):
         self.coin_group.update()
         self.snake_group.update()
         self.tick()
+
+    def detect_train_data(self, snake: "SnakeTrainer") -> numpy.ndarray:
+        return core.filter_range(snake, self.coin_group, self.snake_group)
 
     @property
     def data(self):
