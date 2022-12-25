@@ -276,7 +276,7 @@ class SnakeTrainer(SeniorSnakeRobot):
 
     def handle(self, reward):
         data = self.generate_data
-        print(reward) if reward else None
+        # print(reward) if reward else None
         pass
 
     @property
@@ -314,7 +314,7 @@ class SnakeTrainer(SeniorSnakeRobot):
             self.border_promise(WIDTH - x - self.radius),
             self.border_promise(HEIGHT - y - self.radius)
         ))
-        print(border_warning)
+        self.reward_current -= border_warning / 2
 
     @staticmethod
     def border_promise(val):
