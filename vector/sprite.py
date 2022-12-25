@@ -276,7 +276,8 @@ class SnakeTrainer(SeniorSnakeRobot):
 
     def handle(self, reward):
         data = self.generate_data
-        print(reward, self.kill) if reward else None
+        print(reward) if reward else None
+        pass
 
     @property
     def generate_data(self):
@@ -303,7 +304,21 @@ class SnakeTrainer(SeniorSnakeRobot):
         coin = self.parent.get_closest_coin(self)
         if coin:
             distance = get_distance(coin, self.head)
-            self.reward_current += relu(distance - 100) / 1000
+            percent = relu(AVAILABLE_COIN_DISTANCE - distance) / AVAILABLE_COIN_DISTANCE
+            self.reward_current += percent / 10
+
+        x, y = self.head
+        border_warning = numpy.sum((
+            self.border_promise(x - self.radius),
+            self.border_promise(y - self.radius),
+            self.border_promise(WIDTH - x - self.radius),
+            self.border_promise(HEIGHT - y - self.radius)
+        ))
+        print(border_warning)
+
+    @staticmethod
+    def border_promise(val):
+        return relu(BLOCK_SIZE - val) / BLOCK_SIZE
 
     def death(self):
         self.reward_current -= 1
