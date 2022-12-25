@@ -92,7 +92,7 @@ class SnakeGroup(object):
     def iter_combinations(self):
         return combinations(self.snakes, 2)
 
-    def get_closest_coin(self, snake: SnakeRobot):
+    def get_closest_coin(self, snake: JuniorSnakeRobot):
         return get_closest_element(snake.head, self.parent.coin_group.coins)
 
     def call_death(self, snake: BaseSnake):

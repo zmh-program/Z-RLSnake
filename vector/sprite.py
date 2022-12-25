@@ -76,7 +76,7 @@ class Migration(object):
 
 class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
-                 direction: Optional[list] = None, length=3, parent = None):
+                 direction: Optional[list] = None, length=3, parent=None):
         super().__init__(length, radius=BLOCK_RADIUS)
         self.color = color or generate_color()
         self.background = generate_background(self.color)
@@ -189,11 +189,11 @@ class SnakePlayer(BaseSnake):
         pass
 
 
-class SnakeRobot(BaseSnake):
+class JuniorSnakeRobot(BaseSnake):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def random_direction(self):
+    def refresh_direction(self):
         self.update_direction(generate_direction())
 
     def _border_collide_detection(self) -> bool:
@@ -204,9 +204,8 @@ class SnakeRobot(BaseSnake):
     def collide_detection(self):
         breakup = 0
         while self._border_collide_detection() and breakup < 100:
-            self.random_direction()
+            self.refresh_direction()
             breakup += 1
-        print(breakup)
 
     def update(self):
         resp = self.parent.get_closest_coin(self)
@@ -214,6 +213,35 @@ class SnakeRobot(BaseSnake):
             self.update_direction_from_point(resp)
         self.collide_detection()
         super().update()
+
+
+class SeniorSnakeRobot(JuniorSnakeRobot):
+    def __promise(self, idx, positive: 1):
+        self.direction[idx] = positive * abs(numpy.random.randn(1))
+
+    def _promise_x(self, positive: 1):
+        self.__promise(0, positive)
+
+    def _promise_y(self, positive: 1):
+        self.__promise(1, positive)
+
+    def _intelligence_border_collide_detection(self) -> None:
+        x, y = self.head + self.direction
+        if x - self.radius < 0:
+            self._promise_x(1)
+        elif x + self.radius > WIDTH:
+            self._promise_x(-1)
+        if y - self.radius < 0:
+            self._promise_y(1)
+        elif y + self.radius > HEIGHT:
+            self._promise_y(-1)
+        self.update_direction(self.direction)
+
+    def refresh_direction(self):
+        self._intelligence_border_collide_detection()
+
+    def collide_detection(self):
+        self._intelligence_border_collide_detection()
 
 
 class Coin(Circle):
