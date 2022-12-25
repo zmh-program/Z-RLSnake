@@ -48,7 +48,9 @@ class Migration(object):
 
             这也是Minecraft的区块刷新的网络传输方法之一 (不过人家是udp, 大概因为要求数据准确率不是极高, 且通过双方算法弥补, 否则不可能每帧近GB传输吧)
                                                 (别问我是怎么知道的)
-
+        3. Migrations 机制
+        100条蛇, Migration约0-4000bytes (平均1210bytes, 1.12KiB), 全部数据 12301bytes (12KiB)
+            计算实际全部流量: data * tick * client
     """
 
     def __init__(self):

@@ -117,7 +117,7 @@ class SnakeGroup(object):
 
     @property
     def migration(self):
-        return {snake: snake.migration for snake in self.snakes if snake.has_migration}
+        return {snake.name: snake.migration for snake in self.snakes if snake.has_migration}
 
     def get_data(self) -> list:
         return [snake.get_data() for snake in self.snakes if snake.alive]
@@ -149,6 +149,13 @@ class AbstractGameGroup(object):
         self.coin_group.update()
         self.snake_group.update()
         self.tick()
+
+    @property
+    def data(self):
+        return {
+            "coin": self.coin_group.get_data(),
+            "snake": self.snake_group.get_data()
+        }
 
     @property
     def migration(self):

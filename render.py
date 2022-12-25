@@ -42,7 +42,7 @@ class PygameSnakeGroup(group.SnakeGroup):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.player = self.add_snake("zmh-program", otype=sprite.SnakePlayer)
-        for idx in range(10):
+        for idx in range(100):
             self.add_snake(str(idx), otype=sprite.SeniorSnakeRobot)
 
     def update(self):
@@ -85,7 +85,7 @@ class PygameGameGroup(group.AbstractGameGroup):
         pygame.display.update()
         # self.spent.append(time.time() - startup)
         # print((1 / numpy.average(self.spent)), (1 / numpy.max(self.spent)), self.coin_group.length)
-        # clock.tick(param.FPS)
+        clock.tick(param.FPS)
 
 
 if __name__ == "__main__":
