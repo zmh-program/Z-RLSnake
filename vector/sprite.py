@@ -193,10 +193,26 @@ class SnakeRobot(BaseSnake):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def random_direction(self):
+        self.update_direction(generate_direction())
+
+    def _border_collide_detection(self) -> bool:
+        x, y = self.head + self.direction
+        return x - self.radius < 0 or y - self.radius < 0 or \
+            x + self.radius > WIDTH or y + self.radius > HEIGHT
+
+    def collide_detection(self):
+        breakup = 0
+        while self._border_collide_detection() and breakup < 100:
+            self.random_direction()
+            breakup += 1
+        print(breakup)
+
     def update(self):
         resp = self.parent.get_closest_coin(self)
         if resp:
             self.update_direction_from_point(resp)
+        self.collide_detection()
         super().update()
 
 
