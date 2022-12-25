@@ -11,18 +11,20 @@ class CoinGroup(Migration):
         self.nature_coins: List[Coin] = []
         self._coin_length = 0
         self.parent = parent
+        self.cursor = 0  # as index
 
         self.add_coin()
 
     @staticmethod
-    def generate_coin(score, position):
-        return Coin(score=score, position=position)
+    def generate_coin(score, position, index):
+        return Coin(score=score, position=position, index=index)
 
     def add_coin(self, position=None, score=1, natural=False):
-        coin = self.generate_coin(score, position)
+        coin = self.generate_coin(score, position, self.cursor)
         self.coins.append(coin)
         self._coin_length += 1
-
+        self.cursor += 1
+        self.add_dict_migration("add", coin.index, coin.data)
         if natural:
             self.nature_coins.append(coin)
 
@@ -42,10 +44,11 @@ class CoinGroup(Migration):
 
         if coin.natural:
             self.nature_coins.remove(coin)
+        self.add_list_migration("remove", coin.index)
 
     def delete_coin(self, index):
         assert index + 1 <= self._coin_length
-        del self.coins[index]
+        self.remove_coin(self.coins[index])
 
     def coin_collided(self, coin: Coin) -> int:
         self.remove_coin(coin)
@@ -61,8 +64,8 @@ class CoinGroup(Migration):
     def length(self):
         return self._coin_length
 
-    def get_data(self) -> list:
-        return [coin.data for coin in self.coins]
+    def get_data(self) -> dict:
+        return {coin.index: coin.data for coin in self.coins}
 
 
 class SnakeGroup(object):

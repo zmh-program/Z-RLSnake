@@ -1,6 +1,4 @@
 import sys
-import time
-import numpy
 import pygame
 from vector import sprite, group, color
 import param
@@ -27,8 +25,8 @@ class PygameCoinGroup(pygame.sprite.Group, group.CoinGroup):
         super(PygameCoinGroup, self).__init__()
         group.CoinGroup.__init__(self, parent)
 
-    def generate_coin(self, score, position):
-        return PygameCoin(self, score=score, position=position)
+    def generate_coin(self, score, position, index):
+        return PygameCoin(self, score=score, position=position, index=index)
 
     def remove_coin(self, coin: PygameCoin):
         super(PygameCoinGroup, self).remove_coin(coin)
@@ -44,7 +42,7 @@ class PygameSnakeGroup(group.SnakeGroup):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.player = self.add_snake("zmh-program", otype=sprite.SnakePlayer)
-        for idx in range(100):
+        for idx in range(10):
             self.add_snake(str(idx), otype=sprite.SeniorSnakeRobot)
 
     def update(self):
@@ -87,7 +85,7 @@ class PygameGameGroup(group.AbstractGameGroup):
         pygame.display.update()
         # self.spent.append(time.time() - startup)
         # print((1 / numpy.average(self.spent)), (1 / numpy.max(self.spent)), self.coin_group.length)
-        clock.tick(param.FPS)
+        # clock.tick(param.FPS)
 
 
 if __name__ == "__main__":

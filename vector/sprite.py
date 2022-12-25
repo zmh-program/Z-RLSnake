@@ -64,6 +64,20 @@ class Migration(object):
     def has_migration(self) -> bool:
         return bool(self.migration_)
 
+    def add_number_migration(self, key, value):
+        self.migration_[key] = self.migration_.get(key, 0) + value
+
+    def add_list_migration(self, key, value):
+        (self.migration_[key].append(value)) if key in self.migration_ else (self.migration_.setdefault(key, [value, ]))
+
+    def add_dict_migration(self, key, value, sub_value):
+        if key in self.migration_:
+            self.migration_[key][value] = sub_value
+        else:
+            self.migration_[key] = {
+                value: sub_value
+            }
+
     @property
     def migration(self):
         migrate = self.migration_
@@ -78,6 +92,7 @@ class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
                  direction: Optional[list] = None, length=3, parent=None):
         super().__init__(length, radius=BLOCK_RADIUS)
+        Migration.__init__(self)
         self.color = color or generate_color()
         self.background = generate_background(self.color)
         self.name = name
@@ -96,20 +111,15 @@ class BaseSnake(CircleArray, Migration):
         self.kill = 0
         self.kill__added = 0
 
-    def __del__(self):
-        del self.color
-        del self.direction
-        del self._size
-        del self._array
-        del self._array_size
-
     def death(self):
         self.alive = False
-        del self
+        self.add_migration("alive", self.alive)
 
     def move(self) -> None:
         self.delete(-1)
         self.head = self.insert(self.get(0) + self.direction)
+        
+        # do not add migration
 
     def add_body(self, num=1) -> None:
         for _ in range(num):
@@ -117,6 +127,7 @@ class BaseSnake(CircleArray, Migration):
 
     def update_direction(self, direction):
         self.direction = hypot_percent(direction, SNAKE_BODY_STRIDE)
+        self.add_migration("direction", self.direction)
 
     def update_direction_from_point(self, position):
         self.update_direction(self.get_head_distances(position))
@@ -131,10 +142,7 @@ class BaseSnake(CircleArray, Migration):
 
         self.move()
 
-        self.kill += self.kill__added
-        self.score += self.score__added
-        self.kill__added = 0
-        self.score__added = 0
+        self.score_detection()
 
     def __str__(self):
         return f"Snake Object (name={self.name}, length={self._size}, direction={self.direction})"
@@ -142,14 +150,28 @@ class BaseSnake(CircleArray, Migration):
     def add_killed(self, val=1):
         self.kill__added += val
 
-    def add_score(self, val=1):
-        self.score += val
+    def killed_detection(self):
+        if self.kill__added:
+            self.kill += self.kill__added
+            self.add_migration("kill", self.kill__added)
+            self.kill__added = 0
 
-        queue = self.score__queue + val
-        score__ready = queue // 5
-        self.score__queue = queue % 5
-        self.add_body(score__ready)
-        return score__ready
+    def add_score(self, val=1):
+        self.score__added += val
+        
+    def score_detection(self):
+        if self.score__added:
+            self.score += self.score__added
+            queue = self.score__queue + self.score__added
+            score__ready = queue // 5
+            self.score__queue = queue % 5
+            self.add_body(score__ready)
+
+            self.add_migration("score", self.score__added)
+            self.score__added = 0
+
+            if score__ready:
+                self.add_migration("body", self.score__added)
 
     def snake_collided(self, snake: "BaseSnake") -> bool:
         return self.element_is_collide_array(0, snake)
@@ -245,10 +267,10 @@ class SeniorSnakeRobot(JuniorSnakeRobot):
 
 
 class Coin(Circle):
-    def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
+    def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None, index=0):
         super().__init__(generate_position() if position is None else position, radius=BLOCK_RADIUS)
         self.score = score
-
+        self.index = index
         self.generated = 0
         self.natural = False
 
@@ -265,4 +287,4 @@ class Coin(Circle):
 
     @property
     def data(self):
-        return self.x, self.y
+        return (self.x, self.y), self.score
