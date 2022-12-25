@@ -188,7 +188,7 @@ class SnakePlayer(BaseSnake):
 
 class Coin(Circle):
     def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
-        super().__init__(position or generate_position(), radius=BLOCK_RADIUS)
+        super().__init__(generate_position() if position is None else position, radius=BLOCK_RADIUS)
         self.score = score
 
         self.generated = 0

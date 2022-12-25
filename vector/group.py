@@ -80,6 +80,8 @@ class SnakeGroup(object):
     def update(self):
         for snake in self.snakes:
             snake.update()
+            if snake.border_collide():
+                self.parent.snake_death(snake)
 
     @property
     def length(self) -> int:
