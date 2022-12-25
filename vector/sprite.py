@@ -276,7 +276,7 @@ class SnakeTrainer(SeniorSnakeRobot):
 
     def handle(self, reward):
         data = self.generate_data
-        print(reward)
+        print(reward, self.kill) if reward else None
 
     @property
     def generate_data(self):
@@ -291,7 +291,8 @@ class SnakeTrainer(SeniorSnakeRobot):
         self.reward_current = 0.
 
     def killed_detection(self):
-        self.reward_current += self.kill__added * 0.5
+        if self.kill__added:
+            self.reward_current += self.kill__added * 0.5
         super().killed_detection()
 
     def score_detection(self):

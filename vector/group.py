@@ -94,10 +94,6 @@ class SnakeGroup(object):
     def length(self) -> int:
         return len(self.snakes)
 
-    @property
-    def iter_combinations(self):
-        return combinations(self.snakes, 2)
-
     def get_closest_coin(self, snake: Union[JuniorSnakeRobot, SnakeTrainer]):
         return get_closest_element(snake.head, self.parent.coin_group.coins)
 
@@ -109,11 +105,13 @@ class SnakeGroup(object):
         return set(self._iter_snake_collide())
 
     def _iter_snake_collide(self) -> Iterable[BaseSnake]:
-        for s1, s2 in self.iter_combinations:
+        for s1, s2 in combinations(self.snakes, 2):
             b1, b2 = snake_combination_collide(s1, s2)
             if b1:
+                s2.add_killed()
                 yield s1
             if b2:
+                s1.add_killed()
                 yield s2
 
     @property
