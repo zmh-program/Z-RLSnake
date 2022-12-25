@@ -14,7 +14,8 @@ def get_distance(pos1, pos2):
 
 
 def get_closest_element(point: numpy.ndarray, array: Iterable["Point2d"]):
-    return min(array, key=lambda point2: get_distance(point, point2.array))
+    return min(array, key=lambda point2: get_distance(point, point2.array)) if array else None
+    # fixed ValueError: min() arg is an empty sequence
 
 
 def hypot_percent(arr, total: Optional[float] = 1.) -> numpy.ndarray:
