@@ -10,8 +10,8 @@ import numpy
 
 def generate_position():
     return numpy.array([
-        numpy.random.randint(WIDTH_BLOCK) * BLOCK_SIZE,
-        numpy.random.randint(HEIGHT_BLOCK) * BLOCK_SIZE,
+        numpy.random.randint(BLOCK_SIZE, WIDTH_BLOCK * (BLOCK_SIZE - 1)),
+        numpy.random.randint(BLOCK_SIZE, HEIGHT_BLOCK * (BLOCK_SIZE - 1)),
     ])
 
 
@@ -137,7 +137,7 @@ class BaseSnake(CircleArray, Migration):
         self.score__added = 0
 
     def __str__(self):
-        return f"Snake Object (length={self._size}, direction={self.direction})"
+        return f"Snake Object (name={self.name}, length={self._size}, direction={self.direction})"
 
     def add_killed(self, val=1):
         self.kill__added += val

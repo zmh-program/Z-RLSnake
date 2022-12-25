@@ -83,6 +83,8 @@ class SnakeGroup(object):
             snake.update()
             if snake.border_collide():
                 self.parent.snake_death(snake)
+        for snake in self.get_snake_collide():
+            self.parent.snake_death(snake)
 
     @property
     def length(self) -> int:
