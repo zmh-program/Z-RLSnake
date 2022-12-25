@@ -17,7 +17,8 @@ def count_range(center):
 def filter_point(arr: numpy.ndarray):
     # arr.__le__(param.DATA_SIZE).all(), 即Less and Equal ( <= ), 等同于 (arr <= param.DATA_SIZE).all()
     # return arr.__le__(param.DATA_SIZE).all()
-    return ((0 <= arr) & (arr <= param.DATA_SIZE)).all()
+    # 不能为 arr <= param.DATA_SIZE, 最大索引值5, 即长6, 抛出IndexError: index 5 is out of bounds for axis 0 with size 5
+    return ((0 <= arr) & (arr < param.DATA_SIZE)).all()
 
 
 def filter_range(cls: "sprite.SnakeTrainer", coins: "group.CoinGroup", snakes: "group.SnakeGroup") -> numpy.ndarray:

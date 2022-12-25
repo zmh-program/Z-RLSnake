@@ -2,7 +2,7 @@ import time
 
 from param import *
 from .circle import *
-from .vec2d import hypot_percent
+from .vec2d import hypot_percent, get_distance, relu
 from .color import generate_color, generate_background
 from typing import *
 import numpy
@@ -268,7 +268,7 @@ class SeniorSnakeRobot(JuniorSnakeRobot):
         self._intelligence_border_collide_detection()
 
 
-class SnakeTrainer(BaseSnake):
+class SnakeTrainer(SeniorSnakeRobot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.reward_total = 0.
@@ -284,6 +284,8 @@ class SnakeTrainer(BaseSnake):
 
     def update(self):
         super().update()
+        self.pre_detection()
+
         self.reward_total += self.reward_current
         self.handle(self.reward_current)
         self.reward_current = 0.
@@ -295,6 +297,12 @@ class SnakeTrainer(BaseSnake):
     def score_detection(self):
         self.reward_current += self.score__added * 0.1
         super().score_detection()
+
+    def pre_detection(self):
+        coin = self.parent.get_closest_coin(self)
+        if coin:
+            distance = get_distance(coin, self.head)
+            self.reward_current += relu(distance - 100) / 1000
 
     def death(self):
         self.reward_current -= 1
