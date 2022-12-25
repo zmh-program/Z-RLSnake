@@ -1,5 +1,5 @@
 import numpy
-from . import vec2d, sprite, group
+from . import sprite, group
 import param
 
 
@@ -15,8 +15,9 @@ def count_range(center):
 
 
 def filter_point(arr: numpy.ndarray):
-    # arr.__le__(param.BLOCK_SIZE).all(), 即Less and Equal ( <= ), 等同于 (arr <= param.BLOCK_SIZE).all()
-    return arr.__le__(param.BLOCK_SIZE).all()
+    # arr.__le__(param.DATA_SIZE).all(), 即Less and Equal ( <= ), 等同于 (arr <= param.DATA_SIZE).all()
+    # return arr.__le__(param.DATA_SIZE).all()
+    return ((0 <= arr) & (arr <= param.DATA_SIZE)).all()
 
 
 def filter_range(cls: "sprite.SnakeTrainer", coins: "group.CoinGroup", snakes: "group.SnakeGroup") -> numpy.ndarray:
@@ -29,7 +30,7 @@ def filter_range(cls: "sprite.SnakeTrainer", coins: "group.CoinGroup", snakes: "
         x, y = arr
         tensor[y][x] = 2
 
-    for arr in filter(filter_point, [arr for snake in (set(snakes.snakes) - {cls, })
+    for arr in filter(filter_point, [numpy.array(arr, dtype=numpy.int) for snake in (set(snakes.snakes) - {cls, })
                                      for arr in (snake.array // param.BLOCK_SIZE - start_block)]):
         x, y = arr
         tensor[y][x] = 3
