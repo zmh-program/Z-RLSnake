@@ -1,6 +1,5 @@
 import sys
 import time
-
 import numpy
 import pygame
 from vector import sprite, group, color
@@ -9,12 +8,12 @@ import param
 
 class PygameCoin(pygame.sprite.Sprite, sprite.Coin):
     def __init__(self, group_, *args, **kwargs):
-        self.image = pygame.Surface((param.COIN_RADIUS * 2, param.COIN_RADIUS * 2))
+        self.image = pygame.Surface((param.BLOCK_RADIUS * 2, param.BLOCK_RADIUS * 2))
         self.image.fill(color.BLACK)
         pygame.draw.circle(self.image, color.YELLOW,
-                           (param.COIN_RADIUS, param.COIN_RADIUS), param.COIN_RADIUS-1)
+                           (param.BLOCK_RADIUS, param.BLOCK_RADIUS), param.BLOCK_RADIUS)
         pygame.draw.circle(self.image, color.GOLD,
-                           (param.COIN_RADIUS, param.COIN_RADIUS), param.COIN_RADIUS, 1)
+                           (param.BLOCK_RADIUS, param.BLOCK_RADIUS), param.BLOCK_RADIUS, 1)
         self.image.set_colorkey(color.BLACK)
         super().__init__(group_)
         sprite.Coin.__init__(self, *args, **kwargs)
@@ -29,6 +28,10 @@ class PygameCoinGroup(pygame.sprite.Group, group.CoinGroup):
 
     def generate_coin(self, score, position):
         return PygameCoin(self, score=score, position=position)
+
+    def remove_coin(self, coin: PygameCoin):
+        super(PygameCoinGroup, self).remove_coin(coin)
+        self.remove(coin)
 
     def update(self):
         super(PygameCoinGroup, self).update()
@@ -45,7 +48,8 @@ class PygameSnakeGroup(group.SnakeGroup):
         super().update()
         for snake in self.snakes:
             for arr in snake.array:
-                pygame.draw.circle(screen, snake.color, arr, param.SNAKE_RADIUS)
+                pygame.draw.circle(screen, snake.color, arr, param.BLOCK_RADIUS)
+                pygame.draw.circle(screen, snake.background, arr, param.BLOCK_RADIUS, 1)
 
     def update_player_direction(self):
         self.player.update_direction(pygame.mouse.get_pos())

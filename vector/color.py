@@ -39,3 +39,7 @@ _len = len(_generates)
 
 def generate_color():
     return _generates[random.randint(_len)]
+
+
+def generate_background(color):
+    return tuple(map(lambda val: max(val - 50, 0), color))

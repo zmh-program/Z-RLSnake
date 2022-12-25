@@ -11,6 +11,8 @@ class CoinGroup(Migration):
         self._coin_length = 0
         self.parent = parent
 
+        self.add_coin()
+
     @staticmethod
     def generate_coin(score, position):
         return Coin(score=score, position=position)
@@ -28,6 +30,7 @@ class CoinGroup(Migration):
             self.add_coin(arr, 5)
 
     def update(self):
+        self.collide_snakes(self.parent.snake_group)
         for coin in self.nature_coins:
             if coin.is_clear:
                 self.remove_coin(coin)
@@ -135,8 +138,8 @@ class AbstractGameGroup(object):
         return self.snake_group.add_snake(name, snake_type)
 
     def update(self):
-        self.snake_group.update()
         self.coin_group.update()
+        self.snake_group.update()
         self.tick()
 
     @property

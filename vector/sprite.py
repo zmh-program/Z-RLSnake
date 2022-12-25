@@ -3,15 +3,15 @@ import time
 from param import *
 from .circle import *
 from .vec2d import hypot_percent
-from .color import generate_color
+from .color import generate_color, generate_background
 from typing import *
 import numpy
 
 
 def generate_position():
     return numpy.array([
-        numpy.random.randint(WIDTH_BLOCK) * BLOCK_STRIDE,
-        numpy.random.randint(HEIGHT_BLOCK) * BLOCK_STRIDE,
+        numpy.random.randint(WIDTH_BLOCK) * BLOCK_SIZE,
+        numpy.random.randint(HEIGHT_BLOCK) * BLOCK_SIZE,
     ])
 
 
@@ -77,8 +77,9 @@ class Migration(object):
 class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
                  direction: Optional[list] = None, length=3):
-        super().__init__(length, radius=SNAKE_RADIUS)
+        super().__init__(length, radius=BLOCK_RADIUS)
         self.color = color or generate_color()
+        self.background = generate_background(self.color)
         self.name = name
 
         self.add_values(location or generate_position(), length)
@@ -152,6 +153,7 @@ class BaseSnake(CircleArray, Migration):
         return {
             "name": self.name,
             "color": self.color,
+            "background": self.background,
             "direction": self.direction,
             "array": self.array,
             "kill": self.kill,
@@ -186,7 +188,7 @@ class SnakePlayer(BaseSnake):
 
 class Coin(Circle):
     def __init__(self, score: int = 1, position: Optional[Iterable[float]] = None):
-        super().__init__(position or generate_position(), radius=COIN_RADIUS)
+        super().__init__(position or generate_position(), radius=BLOCK_RADIUS)
         self.score = score
 
         self.generated = 0
