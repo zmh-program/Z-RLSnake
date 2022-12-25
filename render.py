@@ -43,6 +43,8 @@ class PygameSnakeGroup(group.SnakeGroup):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.player = self.add_snake("zmh-program", otype=sprite.SnakePlayer)
+        for idx in range(10):
+            self.add_snake(str(idx), otype=sprite.SnakeRobot)
 
     def update(self):
         super().update()
@@ -52,7 +54,7 @@ class PygameSnakeGroup(group.SnakeGroup):
                 pygame.draw.circle(screen, snake.background, arr, param.BLOCK_RADIUS, 1)
 
     def update_player_direction(self):
-        self.player.update_direction(pygame.mouse.get_pos())
+        self.player.update_direction_from_point(pygame.mouse.get_pos())
 
 
 class PygameGameGroup(group.AbstractGameGroup):

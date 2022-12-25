@@ -1,7 +1,7 @@
 from .sprite import *
 from itertools import combinations
 from typing import *
-from vec2d import get_closest_element
+from .vec2d import get_closest_element
 
 
 class CoinGroup(Migration):

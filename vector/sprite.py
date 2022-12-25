@@ -118,6 +118,13 @@ class BaseSnake(CircleArray, Migration):
     def update_direction(self, direction):
         self.direction = hypot_percent(direction, SNAKE_BODY_STRIDE)
 
+    def update_direction_from_point(self, position):
+        self.update_direction(self.get_head_distances(position))
+
+    def get_head_distances(self, pos) -> numpy.ndarray:
+        (x1, y1), (x2, y2) = pos, self.head
+        return numpy.array([x1 - x2, y1 - y2])
+
     def update(self):
         if not self.alive:
             return
@@ -169,13 +176,6 @@ class SnakePlayer(BaseSnake):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def update_direction(self, mouse_position):
-        super().update_direction(self.get_head_distances(mouse_position))
-
-    def get_head_distances(self, pos) -> numpy.ndarray:
-        (x1, y1), (x2, y2) = pos, self.head
-        return numpy.array([x1 - x2, y1 - y2])
-
     def gradient_up(self):
         pass
 
@@ -192,6 +192,11 @@ class SnakePlayer(BaseSnake):
 class SnakeRobot(BaseSnake):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def update(self):
+        resp = self.parent.get_closest_coin(self)
+        if resp:
+            self.update_direction_from_point(resp)
 
 
 class Coin(Circle):
