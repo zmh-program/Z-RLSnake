@@ -1,7 +1,7 @@
 from .sprite import *
 from itertools import combinations
 from typing import *
-from .vec2d import get_closest_element
+from .vec2d import get_closest_element, sorted_closest_element
 from . import core
 
 
@@ -82,6 +82,13 @@ class SnakeGroup(object):
     def remove_snake(self, snake: BaseSnake):
         self.snakes.remove(snake)
 
+    def prediction_collide(self, snake: SeniorSnakeRobot) -> bool:
+        for snake_ in self.snakes:
+            if snake_ != snake:
+                if snake.predict_snake_collide(snake_):
+                    return True
+        return False
+
     def update(self):
         for snake in self.snakes:
             snake.update()
@@ -96,6 +103,9 @@ class SnakeGroup(object):
 
     def get_closest_coin(self, snake: Union[JuniorSnakeRobot, SnakeTrainer]):
         return get_closest_element(snake.head, self.parent.coin_group.coins)
+
+    def sorted_closest_coin(self, snake: Union[JuniorSnakeRobot, SnakeTrainer]):
+        return sorted_closest_element(snake.head, self.parent.coin_group.coins)
 
     def call_death(self, snake: BaseSnake):
         snake.death()
@@ -121,8 +131,8 @@ class SnakeGroup(object):
     def get_data(self) -> list:
         return [snake.get_data() for snake in self.snakes if snake.alive]
 
-    def detect_train_data(self, snake: "SnakeTrainer"):
-        return self.parent.detect_train_data(snake)
+    def detect_state(self, snake: "SnakeTrainer"):
+        return self.parent.detect_state(snake)
 
 
 class AbstractGameGroup(object):
@@ -145,14 +155,15 @@ class AbstractGameGroup(object):
     def tick(self):
         self._tick += 1
         if self._tick % GENERATE_COIN_TICK == 0:
-            self.coin_group.add_coin()
+            for _ in range(max(self.snake_group.length // 2, 1)):
+                self.coin_group.add_coin()
 
     def update(self):
         self.coin_group.update()
         self.snake_group.update()
         self.tick()
 
-    def detect_train_data(self, snake: "SnakeTrainer") -> numpy.ndarray:
+    def detect_state(self, snake: "SnakeTrainer") -> numpy.ndarray:
         return core.filter_range(snake, self.coin_group, self.snake_group)
 
     @property

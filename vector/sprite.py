@@ -4,6 +4,7 @@ from param import *
 from .circle import *
 from .vec2d import hypot_percent, get_distance, relu
 from .color import generate_color, generate_background
+from . import core
 from typing import *
 import numpy
 
@@ -92,7 +93,9 @@ class Migration(object):
 
 class BaseSnake(CircleArray, Migration):
     def __init__(self, name="", color: Optional[list] = None, location: Optional[List[float]] = None,
-                 direction: Optional[list] = None, length=3, parent=None):
+                 direction: Optional[list] = None, length=None, parent=None):
+        length = length if isinstance(length, int) else SNAKE_BORN_LENGTH
+
         super().__init__(length, radius=BLOCK_RADIUS)
         Migration.__init__(self)
         self.color = color or generate_color()
@@ -231,17 +234,76 @@ class JuniorSnakeRobot(BaseSnake):
             self.refresh_direction()
             breakup += 1
 
-    def update(self):
+    def detect_closest_coin(self):
         resp = self.parent.get_closest_coin(self)
         if resp:
             self.update_direction_from_point(resp)
+
+    def update(self):
+        self.detect_closest_coin()
         self.collide_detection()
         super().update()
 
 
 class SeniorSnakeRobot(JuniorSnakeRobot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.abandon_coins = []
+        self.target_coin = None
+        self.migrated_direction = 0
+
+    def get_wish_coin(self):
+        coins = self.parent.sorted_closest_coin(self)
+        if not coins:
+            return
+        idx = 0
+
+        while idx < len(coins):
+            coin = coins[idx]
+            if coin not in self.abandon_coins:
+                return coin
+            idx += 1
+
+    def detect_closest_coin(self):
+        coin = self.get_wish_coin()
+
+        if coin:
+            if self.target_coin != coin:
+                self.target_coin = coin
+                self.update_direction_from_point(coin)
+
+        if self.migrated_direction > 100:
+            self.abandon_coins.append(coin)
+            if len(self.abandon_coins) > 2:
+                del self.abandon_coins[0]
+
+    def predict_snake_collide(self, snake: BaseSnake):
+        arr = self.head + self.direction
+        for idx_, arr_ in enumerate(snake.array):
+            if circle_collide(
+                    arr, self.radius,
+                    arr_, snake.radius,
+            ):
+                return True
+        if get_distance(
+                arr,
+                snake.head + snake.direction,
+        ) <= (self.radius + SNAKE_BODY_STRIDE + snake.radius):
+            return True
+
+    def predict(self) -> bool:
+        # will collide: return True
+        return self.parent.prediction_collide(self)
+
     def __promise(self, idx, positive: 1):
+        # breakup = 0
+        # while self.predict() and breakup <= 100:
+        #     self.direction[idx] = positive * abs(numpy.random.randn(1))
+        #     breakup += 1
+
         self.direction[idx] = positive * abs(numpy.random.randn(1))
+
+        self.migrated_direction += 1
 
     def _promise_x(self, positive: 1):
         self.__promise(0, positive)
@@ -251,20 +313,48 @@ class SeniorSnakeRobot(JuniorSnakeRobot):
 
     def _intelligence_border_collide_detection(self) -> None:
         x, y = self.head + self.direction
-        if x - self.radius < 0:
+        if x - self.radius < BLOCK_RADIUS:
             self._promise_x(1)
-        elif x + self.radius > WIDTH:
+        elif x + self.radius > WIDTH - BLOCK_RADIUS:
             self._promise_x(-1)
-        if y - self.radius < 0:
+        if y - self.radius < BLOCK_RADIUS:
             self._promise_y(1)
-        elif y + self.radius > HEIGHT:
+        elif y + self.radius > HEIGHT - BLOCK_RADIUS:
             self._promise_y(-1)
         self.update_direction(self.direction)
+
+    def _intelligence_snake_prediction(self):
+        if self.predict():
+            for pox in (1, -1):
+                for deg in reversed(range(180)):
+                    self.direction = core.degree_to_position(deg * pox, total=SNAKE_BODY_STRIDE)
+                    if not self.predict():
+                        return
+            self.migrated_direction += 1
+
+        # if self.predict():
+        #     deg = core.position_to_degree(*self.direction)
+        #     up_offset = 0
+        #     down_offset = 0
+        #
+        #     while up_offset + down_offset <= 360 - 1:
+        #         up_offset += 1
+        #         if deg + up_offset <= 180:
+        #             self.direction = core.degree_to_position(deg + up_offset)
+        #             if not self.predict():
+        #                 return
+        #
+        #         if deg - down_offset >= -180:
+        #             down_offset += 1
+        #             self.direction = core.degree_to_position(deg - down_offset)
+        #             if not self.predict():
+        #                 return
 
     def refresh_direction(self):
         self._intelligence_border_collide_detection()
 
     def collide_detection(self):
+        self._intelligence_snake_prediction()
         self._intelligence_border_collide_detection()
 
 
@@ -275,21 +365,32 @@ class SnakeTrainer(SeniorSnakeRobot):
         self.reward_current = 0.
 
     def handle(self, reward):
-        data = self.generate_data
+        data = self.generate_state()
         # print(reward) if reward else None
         pass
 
+    def generate_state(self):
+        return self.parent.detect_state(self)
+
     @property
-    def generate_data(self):
-        return self.parent.detect_train_data(self)
+    def start_position_index(self):
+        return numpy.array(self.head // BLOCK_SIZE - DATA_SPREAD, dtype=numpy.int)
 
     def update(self):
+        self.reward_current = 0.
         super().update()
         self.pre_detection()
 
         self.reward_total += self.reward_current
         self.handle(self.reward_current)
-        self.reward_current = 0.
+
+    @property
+    def current_reward(self):
+        return round(self.reward_current, 2)
+
+    @property
+    def total_reward(self):
+        return round(self.reward_total, 2)
 
     def killed_detection(self):
         if self.kill__added:

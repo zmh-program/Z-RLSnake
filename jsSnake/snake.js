@@ -1,5 +1,8 @@
+const container = document.getElementById("game");
+
 /* Polyfill */
-(function(){ 'use strict';
+(function(){ 
+    'use strict';
     let lastTime = 0;
     const vendors = ['webkit', 'moz'];
     for(let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x ) {
@@ -22,6 +25,32 @@
         window.cancelAnimationFrame = id => (clearTimeout( id ));
     }
 })();
+
+/* Effect */
+function createEffect(x, y, color, width=3, radiusArrive=200) {
+    // 'use strict';
+    const effect = document.createElement("div");
+    effect.classList.add("effect");
+    effect.style.border = `${width}px solid ${color}`;
+    let radius = 2;
+    const animation = () => {
+        radius ++;
+        effect.style.width = effect.style.height = `${radius * 2}px`;
+        effect.style.left = `${x - radius}px`;
+        effect.style.top = `${y - radius}px`;
+        effect.style.opacity = (1 / radius).toString();
+        if (radius < radiusArrive) {
+            requestAnimationFrame(animation);
+        }
+        else {
+            try{container.removeChild(effect)}catch (e) {}
+        }
+    }
+    requestAnimationFrame(animation);
+    animation();
+    
+    container.appendChild(effect);
+}
 
 /* Core */
 
@@ -256,8 +285,6 @@ game = {};
         this.rotation = 0;
         this.blur = 0;
         this.alpha = 1;
-        this.borderRadius = 0;
-        this.borderRadiusAmount = 0;
         this.elem = document.createElement( 'div' );
         this.elem.style.position = 'absolute';
         this.parentState.stageElem.appendChild( this.elem );
@@ -269,19 +296,9 @@ game = {};
         if( i === 0 ) {
             this.color = '#fff';
             this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
-            if( this.parentState.snake.dir === 'n' ) {
-                this.borderRadius = this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0 0';
-            } else if( this.parentState.snake.dir === 's' ) {
-                this.borderRadius = '0 0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '%';
-            } else if( this.parentState.snake.dir === 'e' ) {
-                this.borderRadius = '0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0';
-            } else if( this.parentState.snake.dir === 'w' ) {
-                this.borderRadius = this.borderRadiusAmount + '% 0 0 ' + this.borderRadiusAmount + '%';
-            }
         } else {
             this.color = '#fff';
             this.blur = 0;
-            this.borderRadius = '0';
         }
         this.alpha = 1 - ( i / this.parentState.snake.tiles.length ) * 0.6;
         this.rotation = ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 90;
@@ -300,13 +317,14 @@ game = {};
         this.elem.style.height = this.height + 'px';
         this.elem.style.backgroundColor = 'rgba(255, 255, 255, ' + this.alpha + ')';
         this.elem.style.boxShadow = '0 0 ' + this.blur + 'px #fff';
-        this.elem.style.borderRadius = `${this.borderRadius} px`;
+        this.elem.style.borderRadius = `45%`;
     };
 })();
 
 /* Food Tile Entity */
 
-(function(){ 'use strict';
+(function(){ 
+    'use strict';
 
     game.FoodTile = function(opt ) {
         this.parentState = opt.parentState;
@@ -357,6 +375,7 @@ game = {};
         this.elem.style.backgroundColor = 'hsla(' + this.heightue + ', 100%, 60%, 1)';
         this.elem.style.boxShadow = `0 0 ${this.blur}px hsla(${this.heightue}, 100%, 60%, 1)`;
         this.elem.style.opacity = this.opacity;
+        this.elem.style.borderRadius = "45%";
     };
 
 })();
@@ -409,7 +428,6 @@ game = {};
     };
 
     game.Snake.prototype.update = function() {
-        console.log(this.tiles)
         let i;
         if( this.parentState.keys.up ) {
             if( this.dir !== 's' && this.dir !== 'n' && this.currDir !== 's' && this.currDir !== 'n' ) {
@@ -506,6 +524,7 @@ game = {};
 
             // check eating of food
             if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) === 'food' ) {
+                createEffect(this.tiles[0].x, this.tiles[0].y, "white", 5, 400);
                 this.tiles.push( new game.SnakeTile({
                     parentState: this.parentState,
                     parentGroup: this.tiles,
